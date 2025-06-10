@@ -8,6 +8,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.ENUM('active', 'inactive'),
       defaultValue: 'active'
     },
+    image:DataTypes.STRING,
     providerId: DataTypes.INTEGER
   });
 

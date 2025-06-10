@@ -1,16 +1,18 @@
 const {Service} = require('../models');
-
+const fs = require('fs');
+const path = require('path');
 // Create service (Provider only)
 exports.createService = async (req, res) => {
   try {
     const { name, description, price, category } = req.body;
-
+if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
     const newService = await Service.create({
       name,
       description,
       price,
       category,
-      providerId: req.user.id
+      providerId: req.user.id, 
+      image:req.file.filename
     });
 
     res.status(201).json({ message: 'Service created', service: newService });
@@ -41,20 +43,42 @@ exports.getServiceById = async (req, res) => {
 };
 
 // Update service (only provider who created it)
+
 exports.updateService = async (req, res) => {
   try {
     const service = await Service.findByPk(req.params.id);
+    if (!service) return res.status(404).json({ message: 'Service not found' });
 
-    if (!service || service.providerId !== req.user.id) {
+    if (service.providerId !== req.user.id) {
       return res.status(403).json({ message: 'Not authorized to update this service' });
     }
 
+  console.log("service.image",service.image);
+  console.log("req.file",req.file.filename);
+
+    if (req.file) {
+      
+      if (service.image) {
+        // const oldImagePath = path.join(__dirname, '../uploads', service.image);
+        const oldImagePath = path.join(process.cwd(), 'uploads', service.image);
+        
+        if (fs.existsSync(oldImagePath)) {
+          fs.unlinkSync(oldImagePath);
+        }
+      }
+      // Set new image filename
+      req.body.image = req.file.filename;
+    }
+
+    // Update service with new data (including image if uploaded)
     await service.update(req.body);
+
     res.json({ message: 'Service updated', service });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+// ...existing code...
 
 // Delete service
 exports.deleteService = async (req, res) => {
@@ -71,3 +95,5 @@ exports.deleteService = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+
