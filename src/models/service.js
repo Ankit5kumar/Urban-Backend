@@ -13,6 +13,7 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   Service.associate = (models) => {
+    Service.belongsTo(models.category , {foreignKey:'categoryId' , as:'category'}),
     Service.belongsTo(models.User, { foreignKey: 'providerId', as: 'provider' });
     Service.hasMany(models.Booking, { foreignKey: 'serviceId' });
   };

@@ -4,13 +4,13 @@ const path = require('path');
 // Create service (Provider only)
 exports.createService = async (req, res) => {
   try {
-    const { name, description, price, category } = req.body;
+    const { name, description, price, categoryId } = req.body;
 if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
     const newService = await Service.create({
       name,
       description,
       price,
-      category,
+      categoryId,
       providerId: req.user.id, 
       image:req.file.filename
     });
@@ -24,7 +24,7 @@ if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
 // Get all services
 exports.getAllServices = async (req, res) => {
   try {
-    const services = await Service.findAll({ include: ['provider'] });
+    const services = await Service.findAll({ include: [{ model: Category, as: 'category' }] });
     res.json(services);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -53,8 +53,7 @@ exports.updateService = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized to update this service' });
     }
 
-  console.log("service.image",service.image);
-  console.log("req.file",req.file.filename);
+ 
 
     if (req.file) {
       
